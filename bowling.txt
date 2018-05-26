@@ -1,0 +1,448 @@
+#!/usr/bin/ksh
+
+function Ball
+{
+    typeset var=10
+    while ((1))
+    do
+        read Ball
+        if [[ "$Ball" = [Xx]  ]]
+        then
+            Ball=var
+            return $var
+        elif [[ -z $Ball ]]
+        then
+            echo "Please enter the number of pins"
+            continue
+        elif echo $Ball | grep '[^0-9]' > /dev/null
+        then
+            echo "Invalid number, number of pins[1-10] or [Xx] "
+            continue
+        elif (( Ball <= 10 && Ball >= 0 ))
+        then
+            return $Ball
+        else
+          echo "Invalid number, number of pins[1-10] or [Xx] "
+        fi
+    done
+}
+
+function Ball1
+{
+    let "n=$1"
+    while((1))
+    do
+        read Ball1
+        if [[ "$Ball1" = '/'  ]]
+        then
+            return $n
+        elif [[ -z $Ball1 ]]
+        then
+            echo "Please enter the number of pins"
+            continue
+        elif echo $Ball1 | grep '[^0-9]' > /dev/null
+        then
+            echo "Invalid number, number of pins[1-$n]  or / "
+            continue
+        elif (( Ball1 <= n))
+        then
+            return $Ball1
+        else
+          echo "Invalid number, number of pins[1-$n]  or / "
+        fi
+    done
+}
+function dsp
+{
+    printf "=================================================================================\n"
+    printf "|  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |  F7  |  F8  |  F9  |   F10  |\n"
+    printf "%s\n" "======================================================================================"
+    p=1
+
+    printf "|"
+
+    while((p<11 && p<num))
+    do
+        if ((p==10))
+        then
+            ((p1=p+1))
+
+            ((p2=p+2))
+
+            if ((Ball[p]==10))
+            then
+                if ((Ball[p1]==10))
+		 then
+                    if ((Ball[p2]==10))
+                    then
+                        printf " X| X| X|"
+                    else
+                        printf " X| X| %d|" ${Ball[p2]}
+                    fi
+                elif ((Ball[p2]==10))
+                then
+                    printf " X| %d| X|" ${Ball[p1]}
+                else
+                    printf " X| %d| %d|" ${Ball[p1]} ${Ball[p2]}
+                fi
+            elif ((((Ball[p]+Ball1[p]))==10))
+            then
+                if ((Ball[p1]==10))
+                then
+                    printf " %d| /| X|" ${Ball[p]}
+                else
+ printf " %d| /| %d|" ${Ball[p]} ${Ball[p1]}
+                fi
+            else
+                    printf " %d| %d|  |" ${Ball[p]} ${Ball1[p]}
+
+            fi
+
+        elif ((Ball[p]==10))
+        then
+            printf "  | X |"
+        else
+
+            ((y=Ball[p]+Ball1[p]))
+            if ((y==10))
+            then
+                printf " %d| / |" ${Ball[p]}
+            else
+                printf " %d| %d |" ${Ball[p]} ${Ball1[p]}
+ fi
+        fi
+        ((p=p+1))
+    done
+        printf "\n%s\n" "=========================================================================================="
+
+    if((num>11))
+    then
+        ((n_num = 11))
+    else
+        ((n_num = num))
+    fi
+
+    while (( i < n_num ))
+    do
+        ((i1=i+1))
+        ((i2=i+2))
+        if (( Ball[i]==10 ))
+        then
+	 if ((Ball[i1]==10))
+                then
+                    if ((num>i2))
+                    then
+                        ((total[i]=20+Ball[i2]))
+                    else
+                        break
+                    fi
+                else
+
+                    if((i==10))
+                    then
+                        ((total[i]=10+Ball[i1]+Ball[i2]))
+                    else
+                        ((total[i]=10+Ball[i1]+Ball1[i1]))
+                    fi
+                fi
+ else
+                break
+            fi
+
+        else
+            ((total[i]=Ball[i]+Ball1[i]))
+            if ((total[i]==10))
+            then
+                if ((num>i1))
+                then
+                ((total[i]=Ball[i]+Ball1[i]+Ball[i1]))
+                else
+                    break
+                fi
+            fi
+        fi
+        ((i=i+1))
+    done
+ j=1
+    printf "|"
+    while((j<i))
+    do
+        if((j==10))
+        then
+            printf "  %3d   |" ${total[j]}
+        else
+            printf " %3d  |" ${total[j]}
+        fi
+        ((j=j+1))
+    done
+    printf "\n%s\n" "=============================================================================================="
+    sum=0
+    j=1
+    printf "|"
+    while (( j < i))
+    do
+ if((j==10))
+        then
+            printf "  %3d   |" ${total[j]}
+        else
+            printf " %3d  |" ${total[j]}
+        fi
+        ((j=j+1))
+    done
+    printf "\n%s\n" "=============================================================================================="
+    sum=0
+    j=1
+    printf "|"
+    while (( j < i))
+    do
+        ((sum=sum+total[j]))
+        if((j==10))
+        then
+            printf "  %3d   |" $sum
+        else
+            printf " %3d  |" $sum
+        fi
+        ((j=j+1))
+    done
+    printf "\n=================================================================================================\n"
+}
+
+function turkey
+{
+    if((flag==3))
+            then
+                banner "Turkey "
+                flag=0
+            fi
+}
+
+function game
+
+{ clear
+    num=1
+    i=1
+    flag=0
+    stcount=0
+    pg=0
+    spcount=0
+    while (( num < 10))
+    do
+
+        turkey
+        dsp
+        echo "Frame $num"
+        echo "Enter the number of pins"
+        Ball
+        Ball[num]=$?
+        if ((Ball[num] == 10))
+        then
+            ((flag=flag+1))
+            clear
+            banner "Strike"
+            ((stcount=stcount+1))
+            ((num=num+1))
+            continue
+
+        elif ((Ball[num]==0))
+        then
+            banner "Gutter ball"
+        fi
+
+        flag=0
+        ((rem=10-Ball[num]))
+        echo "Enter the number of pins for 2nd ball"
+        Ball1 rem
+	 Ball1[num]=$?
+        ((t=Ball[num]+Ball1[num]))
+        if ((t==10))
+        then
+            clear
+            banner "Spare"
+            ((spcount=spcount+1))
+            ((num=num+1))
+            continue
+
+        fi
+        ((num=num+1))
+        clear
+    done
+    turkey
+    dsp
+    echo "Frame $num"
+    echo "Enter the number of pins"
+    Ball
+ Ball[num]=$?
+     if ((Ball[num] == 10))
+     then
+        ((flag=flag+1))
+        turkey
+        ((stcount=stcount+1))
+        ((num=num+1))
+        ((flag=flag+1))
+        banner "Strike"
+        echo "Enter the pins for extra ball"
+        Ball
+        Ball[num]=$?
+        if ((Ball[num] == 10))
+        then
+            banner "Strike"
+            ((flag=flag+1))
+            turkey
+            ((stcount=stcount+1))
+        fi
+	 ((num=num+1))
+        echo "Enter the pins for extra ball"
+        Ball
+        Ball[num]=$?
+        if ((Ball[num] == 10))
+        then
+            banner "Strike"
+            ((flag=flag+1))
+            turkey
+            ((stcount=stcount+1))
+        fi
+    	else
+       ((rem=10-Ball[num]))
+       echo "Enter the pins for 2nd ball"
+       Ball1 rem
+       Ball1[num]=$?
+       ((t=Ball[num]+Ball1[num]))
+       if ((t==10))
+       then
+	 banner "Spare"
+                ((spcount=spcount+1))
+                ((num=num+1))
+            echo "Enter the pins for extra ball"
+            Ball
+            Ball[num]=$?
+            if ((Ball[num] == 10))
+            then
+                banner "Strike"
+                ((stcount=stcount+1))
+            fi
+        fi
+    fi
+    ((num=num+1))
+    clear
+    echo "Final Score"
+    dsp
+    banner "Game Over"
+    if((stcount==12))
+ then
+        ((pg=1))
+    fi
+    datet=$(date)
+    printf "%s %s" $Name $datet >> bowl.txt
+    m=1
+    while((m<11))
+    do
+
+        if ((Ball[m]==10))
+        then
+            printf "|X,%d" ${total[m]} >> bowl.txt
+        elif ((((Ball[m]+Ball1[m]))==10))
+        then
+            printf "%d|/,%d" ${Ball[m]} ${total[m]} >> bowl.txt
+        else
+            printf "%d|%d,%d" ${Ball[m]} ${Ball1[m]} ${total[m]} >> bowl.txt
+        fi
+        ((m=m+1))
+ printf " " >> bowl.txt
+    done
+    printf "%d" $sum >> bowl.txt
+    printf "\n" >> bowl.txt
+    if grep "^$Name " stats.txt > /dev/null
+    then
+        nawk -v name="$Name" -v st="$stcount" -v sp="$spcount" -v sum="$sum" -v pg="$pg" '{if($1==Name){ $2=$2+st; $3=$3+sp; $4=$3+$2; $5=$5+sum; $6=$6+1;
+$7=$5/$6; $8=$8+pg}}{print}' stats.txt >> stats2.txt
+        rm stats.txt
+        mv stats2.txt stats.txt
+    else
+        ((marks=stcount+spcount))
+        printf "%s %d %d %d %d 1 %d %d\n" $Name $stcount $spcount $marks $sum $sum $pg >> stats.txt
+    fi
+
+
+
+}
+function Stats
+{
+    clear
+    printf "\nTop 10 most striks all the time\n"
+    printf "===============================\n"
+    cat stats.txt | sort -r -nk2 | head | nawk '{printf "%s\t%d\n",$1,$2}'
+    printf "\nTop 10 most marks all the time\n"
+    printf "===============================\n"
+    cat stats.txt | sort -r -nk4 | head | nawk '{printf "%s\t%d\n",$1,$4}'
+    printf "\nTop 10 highest average all the time\n "
+    printf "====================================\n"
+    cat stats.txt | sort -r -nk7 | head | nawk '{printf"%s\t%6.3f\n",$1,$7}'
+    printf "\nBelow is the List of people who got perfect game\n"
+    printf "===================================================\n"
+    cat stats.txt | nawk '{if($8>0){printf "%s\n",$1}}'
+    printf "\npress any key to continue\n"
+    read
+}
+clear
+banner "Bowling"
+while [ 1 ]
+do
+    select choice in BeginGame TopStatistics Exit
+    do
+        clear
+        case "$choice" in
+            BeginGame)  trap "printf '\nYou cannot escape\n' " INT
+                        while ((1))
+                        do
+                        echo "Enter Name"
+                        read Name
+
+                        if echo "$Name" | grep '[0-9]' > /dev/null
+                        then
+                        clear
+                        echo "Invalid Name"
+                        echo "Please enter your Name"
+
+                        continue
+                fi
+
+                if [[ -z $Name ]]
+                then
+                clear
+            echo "Please enter your Name"
+                continue
+        fi
+
+        if grep "^$Name " bowl.txt > /dev/null
+        then
+            echo "Welcome back $Name"
+        else
+            echo "Welcome $Name"
+	 fi
+
+        echo "$Name\nPress any key to continue or E to re enter your correct name"
+        read ch
+        if [[ "$ch" = [Ee] ]]
+        then
+            continue
+        else
+                break
+         fi
+        done
+                        game
+
+                         break
+                                ;;
+            TopStatistics) Stats
+                            clear
+                            break
+                            ;;
+		 Exit)       exit 0
+                        	;;
+            	*)          echo "invalid choice"
+                        break
+                        ;;
+        esac
+    done
+done
+trap INT
